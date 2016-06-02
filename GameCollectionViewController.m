@@ -27,9 +27,10 @@ static NSString * const reuseIdentifier = @"Cell";
 	
 	self.collectionView.allowsMultipleSelection = YES;
 	
-	UISwipeGestureRecognizer *collectionSwipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(cellSwipe:)];
-	collectionSwipe.direction = (UISwipeGestureRecognizerDirectionUp | UISwipeGestureRecognizerDirectionDown | UISwipeGestureRecognizerDirectionRight | UISwipeGestureRecognizerDirectionLeft);
-	[self.collectionView addGestureRecognizer:collectionSwipe];
+	UIPanGestureRecognizer *collectionPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(wordPan:)];
+	collectionPan.maximumNumberOfTouches = 1;
+	[self.collectionView addGestureRecognizer:collectionPan];
+	collectionPan.delegate = self;
 	
     // Uncomment the following line to preserve selection between presentations
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -46,12 +47,42 @@ static NSString * const reuseIdentifier = @"Cell";
     // Do any additional setup after loading the view.
 }
 
--(void)cellSwipe:(UISwipeGestureRecognizer *)gesture {
+NSMutableArray *pannedIndices;
+
+
+
+-(void)wordPan:(UIPanGestureRecognizer *)gesture {
 	CGPoint location = [gesture locationInView:self.collectionView];
 	NSIndexPath *swipedIndexPath = [self.collectionView indexPathForItemAtPoint:location];
-	UICollectionViewCell *swipedCell = [self.collectionView cellForItemAtIndexPath:swipedIndexPath];
+	//NSNumber *currentItemIndex = [NSNumber numberWithInteger:swipedIndexPath.item];
 	
-	NSLog(@"swiped cell: %zd", swipedIndexPath.row);
+	if ([gesture state] == UIGestureRecognizerStateBegan) {
+		pannedIndices = [[NSMutableArray alloc] init];
+		//[pannedIndices addObject:currentItemIndex];
+		if(swipedIndexPath != nil) {
+			[pannedIndices addObject:swipedIndexPath];
+		}
+	} else if ([gesture state] == UIGestureRecognizerStateChanged) {
+		if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
+			[pannedIndices addObject:swipedIndexPath];
+		}
+	}
+	else if ([gesture state] == UIGestureRecognizerStateEnded){
+		if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
+			[pannedIndices addObject:swipedIndexPath];
+		}
+		
+		//NSLog(@"Indices that were selected: %@", pannedIndices.description);
+		for(int i=0; i<pannedIndices.count; i++) {
+			
+			if([[self.collectionView indexPathsForSelectedItems] containsObject:pannedIndices[i]]) {
+				
+			}
+			else {
+				[self.collectionView selectItemAtIndexPath:pannedIndices[i] animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+			}
+		}
+	}
 }
 
 - (void)didReceiveMemoryWarning {
@@ -111,13 +142,13 @@ static NSString * const reuseIdentifier = @"Cell";
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
 	[selectedLetters addObject: gridLetters[indexPath.row]];
 	
-	NSLog(@"selected letters: %@", [selectedLetters componentsJoinedByString:@""]);
+	//NSLog(@"selected letters: %@", [selectedLetters componentsJoinedByString:@""]);
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath {
 	[selectedLetters removeObject: gridLetters[indexPath.row]];
 	
-	NSLog(@"selected letters: %@", [selectedLetters componentsJoinedByString:@""]);
+	//NSLog(@"selected letters: %@", [selectedLetters componentsJoinedByString:@""]);
 }
 
 #pragma mark <UICollectionViewDelegate>

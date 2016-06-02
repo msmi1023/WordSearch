@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GameCollectionViewController : UICollectionViewController
+@interface GameCollectionViewController : UICollectionViewController<UIGestureRecognizerDelegate>
 
 @end
