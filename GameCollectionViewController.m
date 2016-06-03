@@ -47,42 +47,85 @@ static NSString * const reuseIdentifier = @"Cell";
     // Do any additional setup after loading the view.
 }
 
-NSMutableArray *pannedIndices;
+//NSMutableArray *pannedIndices;
 
+-(void)markCellSelectedForGivenPath:(NSIndexPath *)path {
+	if(path != nil) {
+		//[pannedIndices addObject:swipedIndexPath];
+		[self.collectionView selectItemAtIndexPath:path animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+	}
+}
 
+-(void)markCellDeselectedForGivenPath:(NSIndexPath *)path {
+	if(path != nil) {
+		//[pannedIndices addObject:swipedIndexPath];
+		[self.collectionView deselectItemAtIndexPath:path animated:YES];
+	}
+}
 
+NSIndexPath *lastPath;
+//BOOL ongoingGesture = NO;
 -(void)wordPan:(UIPanGestureRecognizer *)gesture {
+	//if ([gesture state] == UIGestureRecognizerStateBegan) {
+	//	ongoingGesture = YES;
+	//}
+	//else if ([gesture state] == UIGestureRecognizerStateEnded){
+	//	ongoingGesture = NO;
+	//}
+	
 	CGPoint location = [gesture locationInView:self.collectionView];
 	NSIndexPath *swipedIndexPath = [self.collectionView indexPathForItemAtPoint:location];
 	//NSNumber *currentItemIndex = [NSNumber numberWithInteger:swipedIndexPath.item];
+	UICollectionViewCell * cell = [self.collectionView cellForItemAtIndexPath:swipedIndexPath];
 	
 	if ([gesture state] == UIGestureRecognizerStateBegan) {
-		pannedIndices = [[NSMutableArray alloc] init];
-		//[pannedIndices addObject:currentItemIndex];
-		if(swipedIndexPath != nil) {
-			[pannedIndices addObject:swipedIndexPath];
+		if(!cell.selected) {
+			[self markCellSelectedForGivenPath:swipedIndexPath];
 		}
-	} else if ([gesture state] == UIGestureRecognizerStateChanged) {
-		if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
-			[pannedIndices addObject:swipedIndexPath];
+		else {
+			[self markCellDeselectedForGivenPath:swipedIndexPath];
 		}
 	}
-	else if ([gesture state] == UIGestureRecognizerStateEnded){
-		if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
-			[pannedIndices addObject:swipedIndexPath];
-		}
-		
-		//NSLog(@"Indices that were selected: %@", pannedIndices.description);
-		for(int i=0; i<pannedIndices.count; i++) {
-			
-			if([[self.collectionView indexPathsForSelectedItems] containsObject:pannedIndices[i]]) {
-				
+	else {
+		if(swipedIndexPath.item != lastPath.item) {
+			if(!cell.selected) {
+				[self markCellSelectedForGivenPath:swipedIndexPath];
 			}
 			else {
-				[self.collectionView selectItemAtIndexPath:pannedIndices[i] animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+				[self markCellDeselectedForGivenPath:swipedIndexPath];
 			}
 		}
 	}
+	
+	lastPath = swipedIndexPath;
+	
+	//if ([gesture state] == UIGestureRecognizerStateBegan) {
+		//pannedIndices = [[NSMutableArray alloc] init];
+		//[pannedIndices addObject:currentItemIndex];
+		//if(swipedIndexPath != nil) {
+		//	[pannedIndices addObject:swipedIndexPath];
+		//}
+	//} else if ([gesture state] == UIGestureRecognizerStateChanged) {
+		//if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
+		//	[pannedIndices addObject:swipedIndexPath];
+		//}
+	//}
+	//else if ([gesture state] == UIGestureRecognizerStateEnded){
+		//if(swipedIndexPath != nil && ![pannedIndices containsObject:swipedIndexPath]) {
+		//	[pannedIndices addObject:swipedIndexPath];
+		//}
+		
+		//NSLog(@"Indices that were selected: %@", pannedIndices.description);
+		//for(int i=0; i<pannedIndices.count; i++) {
+			
+		//	if([[self.collectionView indexPathsForSelectedItems] containsObject:pannedIndices[i]]) {
+				
+		//	}
+		//	else {
+				
+		//	}
+	//	}
+	//}
 }
 
 - (void)didReceiveMemoryWarning {
